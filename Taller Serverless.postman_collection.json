@@ -1,0 +1,167 @@
+{
+	"info": {
+		"_postman_id": "411db529-dfb2-4617-9531-4fcd4bac23ee",
+		"name": "Taller Serverless",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "firstApp",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "SQSApp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"message\": \"test\"\r\n}"
+				},
+				"url": {
+					"raw": "https://2otrcal3ak.execute-api.us-east-1.amazonaws.com/dev/sls-sqs/sender?MessageBody=test",
+					"protocol": "https",
+					"host": [
+						"2otrcal3ak",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"dev",
+						"sls-sqs",
+						"sender"
+					],
+					"query": [
+						{
+							"key": "MessageBody",
+							"value": "test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "crudApp-create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"fullname\":\"Gerardo D\",\r\n    \"email\": \"gerardo@gmail.com\", \r\n    \"experience\":2\r\n}"
+				},
+				"url": {
+					"raw": "https://h9twzgl1e9.execute-api.us-east-1.amazonaws.com/dev/candidates",
+					"protocol": "https",
+					"host": [
+						"h9twzgl1e9",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"dev",
+						"candidates"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "crudApp-Read All",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://h9twzgl1e9.execute-api.us-east-1.amazonaws.com/dev/candidates",
+					"protocol": "https",
+					"host": [
+						"h9twzgl1e9",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"dev",
+						"candidates"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "crudApp-ReadById",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://h9twzgl1e9.execute-api.us-east-1.amazonaws.com/dev/candidates/33e31400-b8c5-11eb-950b-13a73ab5916c",
+					"protocol": "https",
+					"host": [
+						"h9twzgl1e9",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"dev",
+						"candidates",
+						"33e31400-b8c5-11eb-950b-13a73ab5916c"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SNSApp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"note\":5}"
+				},
+				"url": {
+					"raw": "https://0c6ck16mei.execute-api.us-east-1.amazonaws.com/dev/notes",
+					"protocol": "https",
+					"host": [
+						"0c6ck16mei",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"dev",
+						"notes"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

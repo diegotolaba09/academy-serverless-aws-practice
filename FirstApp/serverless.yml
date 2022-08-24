@@ -1,0 +1,14 @@
+service: hellow-world-service
+
+provider:
+    name: aws
+    region: us-east-1
+    runtime: nodejs12.x
+
+functions:
+    HelloWorld:
+        name: diegoTolaba-firstApp
+        description: 'An API that resturns Hello World'
+        handler: hello.handler
+        events:
+            -   http: GET /hello-world
