@@ -1,0 +1,44 @@
+service: snsapp
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  stage: dev
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Resource: "*"
+      Action:
+        - "sns:*"
+  environment:
+   analyzeNote: !Ref analyzeTopic
+
+
+functions:
+  addNote:
+    name: diegoTolaba-addNote
+    description: 'An API that added notes'
+    handler: addNote.addNote
+    events:
+      - http:
+          path: notes
+          method: post
+          cors: true
+
+  analyzeNote:
+    name: diegoTolaba-analyzeNote
+    description: 'An API that analyze notes'
+    handler: analyzeNote.handler
+    events:
+      - sns:
+          arn: !Ref analyzeTopic
+          topicName: analyzeTopic
+
+resources:
+  Resources:
+    analyzeTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: analyzeTopic
+        TopicName: ${self:service}-${self:provider.stage}-analyzeTopic
