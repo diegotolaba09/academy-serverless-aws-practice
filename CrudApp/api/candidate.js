@@ -1,12 +1,11 @@
-'use strict';
+"use strict";
 
-const uuid = require('uuid');
-const AWS = require('aws-sdk'); 
+const uuid = require("uuid");
+const AWS = require("aws-sdk");
 
-AWS.config.setPromisesDependency(require('bluebird'));
+AWS.config.setPromisesDependency(require("bluebird"));
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
 
 /* -- -- CREATE -- -- */
 module.exports.create = (event, context, callback) => {
@@ -15,42 +14,49 @@ module.exports.create = (event, context, callback) => {
   const email = requestBody.email;
   const experience = requestBody.experience;
 
-  if (typeof fullname !== 'string' || typeof email !== 'string' || typeof experience !== 'number') {
-    console.error('Validation Failed');
-    callback(new Error('Couldn\'t submit candidate because of validation errors.'));
+  if (
+    typeof fullname !== "string" ||
+    typeof email !== "string" ||
+    typeof experience !== "number"
+  ) {
+    console.error("Validation Failed");
+    callback(
+      new Error("Couldn't submit candidate because of validation errors.")
+    );
     return;
   }
 
   submitCandidateP(candidateInfo(fullname, email, experience))
-    .then(res => {
+    .then((res) => {
       callback(null, {
         statusCode: 200,
         body: JSON.stringify({
           message: `Sucessfully submitted candidate with email ${email}`,
-          candidateId: res.id
-        })
+          candidateId: res.id,
+        }),
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       callback(null, {
         statusCode: 500,
         body: JSON.stringify({
-          message: `Unable to submit candidate with email ${email}`
-        })
-      })
+          message: `Unable to submit candidate with email ${email}`,
+        }),
+      });
     });
 };
 
-
-const submitCandidateP = candidate => {
-  console.log('Submitting candidate');
+const submitCandidateP = (candidate) => {
+  console.log("Submitting candidate");
   const candidateInfo = {
     TableName: process.env.CANDIDATE_TABLE,
     Item: candidate,
   };
-  return dynamoDb.put(candidateInfo).promise()
-    .then(res => candidate);
+  return dynamoDb
+    .put(candidateInfo)
+    .promise()
+    .then((res) => candidate);
 };
 
 const candidateInfo = (fullname, email, experience) => {
@@ -65,36 +71,34 @@ const candidateInfo = (fullname, email, experience) => {
   };
 };
 
-
 /* -- -- READ All -- -- */
 module.exports.getAll = (event, context, callback) => {
   var params = {
-      TableName: process.env.CANDIDATE_TABLE,
-      ProjectionExpression: "id, fullname, email"
+    TableName: process.env.CANDIDATE_TABLE,
+    ProjectionExpression: "id, fullname, email",
   };
 
   console.log("Scanning Candidate table.");
   const onScan = (err, data) => {
-
-      if (err) {
-          console.log('Scan failed to load data. Error JSON:', JSON.stringify(err, null, 2));
-          callback(err);
-      } else {
-          console.log("Scan succeeded.");
-          return callback(null, {
-              statusCode: 200,
-              body: JSON.stringify({
-                  candidates: data.Items
-              })
-          });
-      }
-
+    if (err) {
+      console.log(
+        "Scan failed to load data. Error JSON:",
+        JSON.stringify(err, null, 2)
+      );
+      callback(err);
+    } else {
+      console.log("Scan succeeded.");
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({
+          candidates: data.Items,
+        }),
+      });
+    }
   };
 
   dynamoDb.scan(params, onScan);
-
 };
-
 
 /* -- -- READ -- -- */
 module.exports.getById = (event, context, callback) => {
@@ -105,17 +109,45 @@ module.exports.getById = (event, context, callback) => {
     },
   };
 
-  dynamoDb.get(params).promise()
-    .then(result => {
+  dynamoDb
+    .get(params)
+    .promise()
+    .then((result) => {
       const response = {
         statusCode: 200,
         body: JSON.stringify(result.Item),
       };
       callback(null, response);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error(error);
-      callback(new Error('Couldn\'t fetch candidate.'));
+      callback(new Error("Couldn't fetch candidate."));
+      return;
+    });
+};
+
+/* -- -- DELETE -- -- */
+module.exports.delete = (event, _context, callback) => {
+  const params = {
+    TableName: process.env.CANDIDATE_TABLE,
+    Key: {
+      id: event.pathParameters.id,
+    },
+  };
+
+  dynamoDb
+    .delete(params)
+    .promise()
+    .then(() => {
+      const response = {
+        statusCode: 200,
+        body: `Delete candidate ${event.pathParameters.id}`,
+      };
+      callback(null, response);
+    })
+    .catch((error) => {
+      console.error(error);
+      callback(new Error("Couldn't delete candidate."));
       return;
     });
 };
