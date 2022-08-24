@@ -12,6 +12,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:DeleteItem
       Resource: "*"
   environment:
     CANDIDATE_TABLE: !Ref CandidatesDynamoDbTable
@@ -44,6 +45,14 @@ functions:
       - http:
           path: candidates/{id}
           method: get
+  deleteById:
+    name: diegoTolaba-deleteCandidate
+    description: Delete Candidate by Id
+    handler: api/candidate.delete
+    events:
+      - http:
+          path: candidates/{id}
+          method: delete
 
 resources:
   Resources:
@@ -64,4 +73,5 @@ resources:
           WriteCapacityUnits: 1
         StreamSpecification:
           StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:service}-${self:provider.stage}-CANDIDATE_TABLE
+        TableName: diegoTolaba-CANDIDATE_TABLE
+        # TableName: ${self:service}-${self:provider.stage}-CANDIDATE_TABLE
