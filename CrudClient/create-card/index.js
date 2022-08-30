@@ -9,7 +9,7 @@ const {
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.handler = async (event) => {
+exports.handler = async (event, context, callback) => {
   try {
     const data = JSON.parse(event.Records[0].body);
     const body = JSON.parse(data.Message);
