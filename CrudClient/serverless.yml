@@ -1,0 +1,157 @@
+service: crud-client-sls
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - "sqs:SendMessage" 
+        - "sqs:GetQueueUrl"
+        - "sns:Publish"
+      Resource: "*"
+  environment:
+    CLIENT_TABLE: !Ref DiegoTolabaClientDB
+    topicClient: !Ref topicClient
+    diegoTolabaSqsCreateGift: !Ref diegoTolabaSqsCreateGift
+    diegoTolabaSqsCreateCard: !Ref diegoTolabaSqsCreateCard
+
+functions:
+    clientCreate:
+        name: diegoTolaba-sls-createClient
+        description: 'An API that resturns Created client!'
+        handler: create-client/index.handler
+        memorySize: 128
+        events:
+          - http: 
+              path: clients
+              method: post
+        destinations:
+          onSuccess:
+            type: sns
+            arn: !Ref topicClient
+
+    giftCreate:
+        name: diegoTolaba-sls-createGift
+        description: 'Gift client!'
+        handler: create-gift/index.handler
+        memorySize: 128
+        events:
+          - sqs:
+              arn:
+                Fn::GetAtt:
+                  - diegoTolabaSqsCreateGift
+                  - Arn
+
+    cardCreate:
+        name: diegoTolaba-sls-createCard
+        description: 'Card client!'
+        handler: create-card/index.handler
+        memorySize: 128
+        events:
+          - sqs:
+              arn:
+                Fn::GetAtt:
+                  - diegoTolabaSqsCreateCard
+                  - Arn
+
+resources:
+  Resources:
+    DiegoTolabaClientDB:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: "id"
+            AttributeType: "S"   
+        KeySchema:
+          -
+            AttributeName: "id"
+            KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: "NEW_AND_OLD_IMAGES"
+        TableName: ${self:service}-${self:provider.stage}-clientTable
+
+    topicClient:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: topicClient
+        TopicName: ${self:service}-${self:provider.stage}-topicClient
+
+    diegoTolabaSqsCreateGift:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "diegoTolabaSqsCreateGift"
+    
+    diegoTolabaSqsCreateCard:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "diegoTolabaSqsCreateCard"
+
+    giftTopicClientSubscription:
+      Type: 'AWS::SNS::Subscription'
+      Properties:
+        TopicArn: !Ref topicClient
+        Endpoint:
+          Fn::GetAtt: [diegoTolabaSqsCreateGift, Arn]
+        Protocol: sqs
+        RawMessageDelivery: 'false'
+
+    cardTopicClientSubscription:
+      Type: 'AWS::SNS::Subscription'
+      Properties:
+        TopicArn: !Ref topicClient
+        Endpoint:
+          Fn::GetAtt: [diegoTolabaSqsCreateCard, Arn]
+        Protocol: sqs
+        RawMessageDelivery: 'false'
+
+    snsToSqsCreateGiftSqsPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sns-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - diegoTolabaSqsCreateGift
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                ArnEquals:
+                  "aws:SourceArn": !Ref topicClient
+        Queues:
+          - Ref: diegoTolabaSqsCreateGift
+
+    snsToSqsCreateCardSqsPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sns-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - diegoTolabaSqsCreateCard
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                ArnEquals:
+                  "aws:SourceArn": !Ref topicClient
+        Queues:
+          - Ref: diegoTolabaSqsCreateCard
