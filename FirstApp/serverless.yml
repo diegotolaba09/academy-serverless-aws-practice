@@ -1,14 +1,16 @@
-service: hellow-world-service
+service: nx-diego-training
 
 provider:
     name: aws
     region: us-east-1
-    runtime: nodejs12.x
+    runtime: nodejs16.x
 
 functions:
     HelloWorld:
         name: diegoTolaba-firstApp
         description: 'An API that resturns Hello World'
-        handler: hello.handler
+        handler: app.handler
         events:
-            -   http: GET /hello-world
+          - http: 
+              path: hello-world
+              method: GET

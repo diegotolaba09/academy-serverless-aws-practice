@@ -1,8 +1,8 @@
-service: crud-client-sls
+service: nx-diego-crud-client-sls
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   stage: dev
   region: us-east-1
   iamRoleStatements:
@@ -23,6 +23,7 @@ provider:
     topicClient: !Ref topicClient
     diegoTolabaSqsCreateGift: !Ref diegoTolabaSqsCreateGift
     diegoTolabaSqsCreateCard: !Ref diegoTolabaSqsCreateCard
+    SLS_DEBUG: '*'
 
 functions:
     clientCreate:
@@ -67,7 +68,7 @@ resources:
   Resources:
     DiegoTolabaClientDB:
       Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
+      DeletionPolicy: Delete
       Properties:
         AttributeDefinitions:
           -
@@ -82,7 +83,7 @@ resources:
           WriteCapacityUnits: 1
         StreamSpecification:
           StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:service}-${self:provider.stage}-clientTable
+        TableName: ${self:service}-${self:provider.stage}-clientDB
 
     topicClient:
       Type: AWS::SNS::Topic
